@@ -406,9 +406,9 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
     case WM_CREATE:
         {
             RECT clR = { 0 };
-            GetClientRect(bHwnd, &clR);
-            clW = clR.right;
-            clH = clR.bottom;
+            GetClientRect(hwnd, &clR);
+            clW = (float)(clR.right);
+            clH = (float)(clR.bottom);
 
             srand((unsigned int)time(0));
 
@@ -659,7 +659,7 @@ void Init2D()
         ErrExit(eD2D);
     }
 
-    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkGoldenrod), &TxtBrush);
+    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::YellowGreen), &TxtBrush);
     if (hr != S_OK)
     {
         LogError(L"Error creating draw TxtBrush");
@@ -1107,7 +1107,7 @@ void Init2D()
         bmp_ok = false;
         LogError(L"Error loading bmpNin2Punch2R");
     }
-    bmpNin2WalkR = Load(L".\\res\\img\\evil\\ninja2\\right\\move1.png", Draw);
+    bmpNin2WalkR = Load(L".\\res\\img\\evil\\ninja2\\right\\move.png", Draw);
     if (!bmpNin2WalkR)
     {
         bmp_ok = false;
@@ -1145,7 +1145,7 @@ void Init2D()
         bmp_ok = false;
         LogError(L"Error loading bmpNin3Punch2L");
     }
-    bmpNin3WalkL = Load(L".\\res\\img\\evil\\ninja3\\left\\walk1.png", Draw);
+    bmpNin3WalkL = Load(L".\\res\\img\\evil\\ninja3\\left\\walk.png", Draw);
     if (!bmpNin3WalkL)
     {
         bmp_ok = false;
@@ -1182,7 +1182,7 @@ void Init2D()
         bmp_ok = false;
         LogError(L"Error loading bmpNin3Punch2R");
     }
-    bmpNin3WalkR = Load(L".\\res\\img\\evil\\ninja3\\right\\walk1.png", Draw);
+    bmpNin3WalkR = Load(L".\\res\\img\\evil\\ninja3\\right\\walk.png", Draw);
     if (!bmpNin3WalkR)
     {
         bmp_ok = false;
@@ -1192,15 +1192,60 @@ void Init2D()
 
     if (!bmp_ok)ErrExit(eD2D);
 
+    float x1 = clW;
+    float y1 = clH / 2 - 50.0f;
+    float ex1 = x1 + 600.0f;
+    float ey1 = y1 + 200.0f;
+    
+    float x2 = 0;
+    float y2 = clH - 200.0f;
+    float ex2 = x2 + 600.0f;
+    float ey2 = y2 + 200.0f;
+    
+    D2D1_RECT_F Line1R = { x1, y1, ex1, ey1 };
+    D2D1_RECT_F Line2R = { x2, y2, ex2, ey2 };
 
+    wchar_t firstline[13] = L"KARATEKA 1.0";
+    wchar_t secondline[11] = L"dev.Daniel";
 
+    bool ready1 = false;
+    bool ready2 = false;
 
+    while (!ready1 && !ready2)
+    {
+        Draw->BeginDraw();
+        Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkBlue));
+        if (x1 > clW / 2 - 150.0f)
+        {
+            x1 -= 0.5f;
+            ex1 = x1 + 600.0f;
+            Line1R.left = x1;
+            Line1R.right = ex1;
+            Line1R.top = y1;
+            Line1R.bottom = ey1;
+        }
+        else ready1 = true;
 
+        if (x2 < clW / 2 + 100.0f)
+        {
+            x2 += 0.5f;
+            ex2 = x2 + 600.0f;
+            Line2R.left = x2;
+            Line2R.right = ex2;
+            Line2R.top = y2;
+            Line2R.bottom = ey2;
+        }
+        else ready2 = true;
 
-
+        if (bigText && TxtBrush)
+            Draw->DrawText(firstline, 13, bigText, Line1R, TxtBrush);
+        if (bigText && TxtBrush)
+            Draw->DrawText(secondline, 11, bigText, Line2R, TxtBrush);
+        Draw->EndDraw();
+        Sleep(10);
+    }
+    Sleep(2500);
 }
-
-
 
 ///////////////////////////////////////////////
 
@@ -1210,7 +1255,80 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     if (!bIns)ErrExit(eClass);
     Init2D();
     
+    while (bMsg.message != WM_QUIT)
+    {
+        if ((bRet = PeekMessage(&bMsg, bHwnd, NULL, NULL, PM_REMOVE)) != 0)
+        {
+            if (bRet == -1)ErrExit(eMsg);
+            TranslateMessage(&bMsg);
+            DispatchMessage(&bMsg);
+        }
+        if (pause)
+        {
+            if (show_help)continue;
+            Draw->BeginDraw();
+            Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkCyan));
+            if (bigText && TxtBrush)
+                Draw->DrawText(L"ПАУЗА", 6, bigText, D2D1::RectF(clW / 2 - 50.0f, clH / 2 - 50.0f, clW, clH), TxtBrush);
+            Draw->EndDraw();
+            continue;
+        }
+        ///////////////////////////////////////////////
 
+
+
+
+        //DRAW THINGS ********************************
+        Draw->BeginDraw();
+        if (butBckg)
+            Draw->FillRectangle(D2D1::RectF(0, 0, scr_width, 50.0f), butBckg);
+        if (nrmText && TxtBrush && TxtHgltBrush && TxtInactBrush)
+        {
+            if (name_set)
+                Draw->DrawText(L"Име на играч", 13, nrmText, b1Rect, TxtInactBrush);
+            else
+            {
+                if (b1Hglt)
+                    Draw->DrawText(L"Име на играч", 13, nrmText, b1Rect, TxtHgltBrush);
+                else
+                    Draw->DrawText(L"Име на играч", 13, nrmText, b1Rect, TxtBrush);
+            }
+            if (b2Hglt)
+                Draw->DrawText(L"Звуци ON / OFF", 15, nrmText, b2Rect, TxtHgltBrush);
+            else
+                Draw->DrawText(L"Звуци ON / OFF", 15, nrmText, b2Rect, TxtBrush);
+            if (b3Hglt)
+                Draw->DrawText(L"Помощ за играта", 16, nrmText, b3Rect, TxtHgltBrush);
+            else
+                Draw->DrawText(L"Помощ за играта", 16, nrmText, b3Rect, TxtBrush);
+
+        }
+
+        switch (level)
+        {
+        case 1:
+            Draw->DrawBitmap(bmpField1, D2D1::RectF(0, 50.0f, scr_width, scr_height));
+            break;
+
+        case 2:
+            Draw->DrawBitmap(bmpField2, D2D1::RectF(0, 50.0f, scr_width, scr_height));
+            break;
+
+        case 3:
+            Draw->DrawBitmap(bmpField3, D2D1::RectF(0, 50.0f, scr_width, scr_height));
+            break;
+
+        case 4:
+            Draw->DrawBitmap(bmpBossField, D2D1::RectF(0, 50.0f, scr_width, scr_height));
+            break;
+        }
+
+
+
+
+        Draw->EndDraw();
+
+    }
 
     std::remove(tmp_file);
     ReleaseCOMs();
