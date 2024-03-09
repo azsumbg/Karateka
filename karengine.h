@@ -175,7 +175,7 @@ class KARENGINE_API PERSON :public OBJECT
 		{
 			if (my_state != states::walk && my_state != states::no_state)return DL_FAIL;
 			my_state = to_what;
-			
+			state_stage = 0;
 			if (my_state == states::fall)
 			{
 				switch (my_type)
@@ -201,9 +201,6 @@ class KARENGINE_API PERSON :public OBJECT
 					break;
 				}
 			}
-
-
-
 			return DL_OK;
 		}
 };
