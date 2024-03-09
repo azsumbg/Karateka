@@ -59,6 +59,10 @@ D2D1_RECT_F b1Rect = { 0, 0, 250.0f, 50.0f };
 D2D1_RECT_F b2Rect = { 275.0f, 0, 525.0f, 50.0f };
 D2D1_RECT_F b3Rect = { 550.0f, 0, 800.0f, 50.0f };
 
+D2D1_RECT_F Visb1Rect = { 20.0f, 0, 250.0f, 50.0f };
+D2D1_RECT_F Visb2Rect = { 295.0f, 0, 525.0f, 50.0f };
+D2D1_RECT_F Visb3Rect = { 570.0f, 0, 800.0f, 50.0f };
+
 bool pause = false;
 bool sound = true;
 bool in_client = true;
@@ -197,6 +201,14 @@ ID2D1Bitmap* bmpBossPunchR = nullptr;
 
 /////////////////////////////////////////
 
+perPtr Hero = nullptr;
+
+objPtr Cloud1 = nullptr;
+objPtr Cloud2 = nullptr;
+
+
+
+//////////////////////////////////////////
 template <typename COM> BOOL LoadOff(COM** which)
 {
     if ((*which))
@@ -348,7 +360,17 @@ void InitGame()
     wcscpy_s(current_player, L"ONE NINJA");
     name_set = false;
 
+    LoadOff(&Cloud1);
+    LoadOff(&Cloud2);
+    LoadOff(&Hero);
 
+    Cloud1 = OBJECT::CreateObject(-100.0f, 103.0f, 100.0f, 53.0f);
+    Cloud2 = OBJECT::CreateObject(clW, 102.0f, 80.0f, 42.0f);
+    Cloud1->SetDir(dirs::right);
+    Cloud2->SetDir(dirs::left);
+
+    Hero = PersFactory(50.0f, clH - 100.0f, types::hero);
+    
 }
 
 void GameOver()
@@ -361,7 +383,6 @@ void GameOver()
     bMsg.message = WM_QUIT;
     bMsg.wParam = 0;
 }
-
 
 INT_PTR CALLBACK bDlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -567,6 +588,31 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
         }
         break;
 
+    case WM_KEYDOWN:
+        if (Hero)
+        {
+            switch (wParam)
+            {
+            case VK_LEFT:
+                Hero->SetDir(dirs::right);
+                Hero->Move((float)(level));
+                break;
+
+            case VK_RIGHT:
+                Hero->SetDir(dirs::left);
+                Hero->Move((float)(level));
+                break;
+
+            case VK_CONTROL:
+                Hero->SetState(states::punch);
+                break;
+
+            case VK_SHIFT:
+                Hero->SetState(states::kick);
+                break;
+            }
+        }
+        break;
 
 
     default: return DefWindowProc(hwnd, ReceivedMsg, wParam, lParam);
@@ -1217,7 +1263,7 @@ void Init2D()
         Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkBlue));
         if (x1 > clW / 2 - 150.0f)
         {
-            x1 -= 0.5f;
+            x1 -= 1.1f;
             ex1 = x1 + 600.0f;
             Line1R.left = x1;
             Line1R.right = ex1;
@@ -1228,7 +1274,7 @@ void Init2D()
 
         if (x2 < clW / 2 + 100.0f)
         {
-            x2 += 0.5f;
+            x2 += 1.1f;
             ex2 = x2 + 600.0f;
             Line2R.left = x2;
             Line2R.right = ex2;
@@ -1242,9 +1288,7 @@ void Init2D()
         if (bigText && TxtBrush)
             Draw->DrawText(secondline, 11, bigText, Line2R, TxtBrush);
         Draw->EndDraw();
-        Sleep(10);
     }
-    Sleep(2500);
 }
 
 ///////////////////////////////////////////////
@@ -1275,6 +1319,39 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         }
         ///////////////////////////////////////////////
 
+        //GAME ENGINE ********************************
+
+        //CLOUDS **********************************
+        if (Cloud1)
+        {
+            if (Cloud1->x <= clW)
+            {
+                Cloud1->x += 1.2f;
+                Cloud1->SetEdges();
+            }
+            else
+            {
+                LoadOff(&Cloud1);
+                Cloud1 = OBJECT::CreateObject(-100.0f, 103.0f, 100.0f, 53.0f);
+                Cloud1->SetDir(dirs::right);
+            }
+        }
+        if (Cloud2)
+        {
+            if (Cloud2->ex >= 0)
+            {
+                Cloud2->x -= 0.8f;
+                Cloud2->SetEdges();
+            }
+            else
+            {
+                LoadOff(&Cloud2);
+                Cloud2 = OBJECT::CreateObject(clW, 102.0f, 80.0f, 42.0f);
+                Cloud2->SetDir(dirs::left);
+            }
+        }
+        ///////////////////////////////////////////
+
 
 
 
@@ -1285,25 +1362,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         if (nrmText && TxtBrush && TxtHgltBrush && TxtInactBrush)
         {
             if (name_set)
-                Draw->DrawText(L"Име на играч", 13, nrmText, b1Rect, TxtInactBrush);
+                Draw->DrawText(L"Име на играч", 13, nrmText, Visb1Rect, TxtInactBrush);
             else
             {
                 if (b1Hglt)
-                    Draw->DrawText(L"Име на играч", 13, nrmText, b1Rect, TxtHgltBrush);
+                    Draw->DrawText(L"Име на играч", 13, nrmText, Visb1Rect, TxtHgltBrush);
                 else
-                    Draw->DrawText(L"Име на играч", 13, nrmText, b1Rect, TxtBrush);
+                    Draw->DrawText(L"Име на играч", 13, nrmText, Visb1Rect, TxtBrush);
             }
             if (b2Hglt)
-                Draw->DrawText(L"Звуци ON / OFF", 15, nrmText, b2Rect, TxtHgltBrush);
+                Draw->DrawText(L"Звуци ON / OFF", 15, nrmText, Visb2Rect, TxtHgltBrush);
             else
-                Draw->DrawText(L"Звуци ON / OFF", 15, nrmText, b2Rect, TxtBrush);
+                Draw->DrawText(L"Звуци ON / OFF", 15, nrmText, Visb2Rect, TxtBrush);
             if (b3Hglt)
-                Draw->DrawText(L"Помощ за играта", 16, nrmText, b3Rect, TxtHgltBrush);
+                Draw->DrawText(L"Помощ за играта", 16, nrmText, Visb3Rect, TxtHgltBrush);
             else
-                Draw->DrawText(L"Помощ за играта", 16, nrmText, b3Rect, TxtBrush);
+                Draw->DrawText(L"Помощ за играта", 16, nrmText, Visb3Rect, TxtBrush);
 
         }
-
         switch (level)
         {
         case 1:
@@ -1322,7 +1398,65 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             Draw->DrawBitmap(bmpBossField, D2D1::RectF(0, 50.0f, scr_width, scr_height));
             break;
         }
+        if (Cloud1)
+            Draw->DrawBitmap(bmpCloud1, D2D1::RectF(Cloud1->x, Cloud1->y, Cloud1->ex, Cloud1->ey));
+        if (Cloud2)
+            Draw->DrawBitmap(bmpCloud2, D2D1::RectF(Cloud2->x, Cloud2->y, Cloud2->ex, Cloud2->ey));
+        //////////////////////////////////////////////
 
+        if(Hero)
+            switch (Hero->GetState())
+            {
+            case states::walk:
+                if (Hero->GetDir() == dirs::left)
+                    Draw->DrawBitmap(bmpHeroWalkL, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+
+                else 
+                    Draw->DrawBitmap(bmpHeroWalkR, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                break;
+
+            case states::fall:
+                if (Hero->GetDir() == dirs::left)
+                    Draw->DrawBitmap(bmpHeroFallL, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+
+                else
+                    Draw->DrawBitmap(bmpHeroFallR, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                break;
+
+            case states::punch:
+                if (Hero->GetDir() == dirs::left)
+                {
+                    if (Hero->GetStateFrame(states::punch) == 0)
+                        Draw->DrawBitmap(bmpHeroPunch1L, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                    else if (Hero->GetStateFrame(states::punch) == 1)
+                        Draw->DrawBitmap(bmpHeroPunch2L, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                }
+                else
+                {
+                    if (Hero->GetStateFrame(states::punch) == 0)
+                        Draw->DrawBitmap(bmpHeroPunch1R, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                    else if (Hero->GetStateFrame(states::punch) == 1)
+                        Draw->DrawBitmap(bmpHeroPunch2R, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                }
+                break;
+
+            case states::kick:
+                if (Hero->GetDir() == dirs::left)
+                {
+                    if (Hero->GetStateFrame(states::kick) == 0)
+                        Draw->DrawBitmap(bmpHeroKick1L, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                    else if (Hero->GetStateFrame(states::kick) == 1)
+                        Draw->DrawBitmap(bmpHeroKick2L, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                }
+                else
+                {
+                    if (Hero->GetStateFrame(states::kick) == 0)
+                        Draw->DrawBitmap(bmpHeroKick1R, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                    else if (Hero->GetStateFrame(states::kick) == 1)
+                        Draw->DrawBitmap(bmpHeroKick2R, D2D1::RectF(Hero->x, Hero->y, Hero->ex, Hero->ey));
+                }
+                break;
+            }
 
 
 

@@ -95,7 +95,7 @@ class KARENGINE_API PERSON :public OBJECT
 		types my_type = types::no_type;
 		states my_state = states::no_state;
 		
-		int state_cooldown = 100;
+		int state_cooldown = 20;
 		int state_stage = 0;
 		int attack = 0;
 		
@@ -152,14 +152,14 @@ class KARENGINE_API PERSON :public OBJECT
 
 			switch (my_dir)
 			{
-			case dirs::right:
+			case dirs::left:
 				if (ex + speed > scr_width)return DL_FAIL;
 				x += speed;
 				SetEdges();
 				return DL_OK;
 				break;
 
-			case dirs::left:
+			case dirs::right:
 				if (x - speed < 0)return DL_FAIL;
 				x -= speed;
 				SetEdges();
@@ -175,6 +175,35 @@ class KARENGINE_API PERSON :public OBJECT
 		{
 			if (my_state != states::walk && my_state != states::no_state)return DL_FAIL;
 			my_state = to_what;
+			
+			if (my_state == states::fall)
+			{
+				switch (my_type)
+				{
+				case types::hero:
+					NewDims(100.0f, 27.0f);
+					break;
+
+				case types::evil1:
+					NewDims(100.0f, 33.0f);
+					break;
+
+				case types::evil2:
+					NewDims(100.0f, 92.0f);
+					break;
+
+				case types::evil3:
+					NewDims(100.0f, 72.0f);
+					break;
+
+				case types::boss:
+					NewDims(100.0f, 27.0f);
+					break;
+				}
+			}
+
+
+
 			return DL_OK;
 		}
 };
