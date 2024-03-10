@@ -95,6 +95,10 @@ ID2D1SolidColorBrush* TxtBrush = nullptr;
 ID2D1SolidColorBrush* TxtHgltBrush = nullptr;
 ID2D1SolidColorBrush* TxtInactBrush = nullptr;
 
+ID2D1SolidColorBrush* LifeBrush = nullptr;
+ID2D1SolidColorBrush* HurtBrush = nullptr;
+ID2D1SolidColorBrush* CritBrush = nullptr;
+
 ID2D1Bitmap* bmpField1 = nullptr;
 ID2D1Bitmap* bmpField2 = nullptr;
 ID2D1Bitmap* bmpField3 = nullptr;
@@ -240,6 +244,10 @@ void ReleaseCOMs()
     if (LoadOff(&TxtBrush) == DL_FAIL)LogError(L"Error releasing TxtBrush");
     if (LoadOff(&TxtHgltBrush) == DL_FAIL)LogError(L"Error releasing TxtHgltBrush");
     if (LoadOff(&TxtInactBrush) == DL_FAIL)LogError(L"Error releasing TxtInactBrush");
+
+    if (LoadOff(&LifeBrush) == DL_FAIL)LogError(L"Error releasing LifeBrush");
+    if (LoadOff(&HurtBrush) == DL_FAIL)LogError(L"Error releasing HurtBrush");
+    if (LoadOff(&CritBrush) == DL_FAIL)LogError(L"Error releasing CritBrush");
 
     if (LoadOff(&bmpField1) == DL_FAIL)LogError(L"Error releasing bmpField1");
     if (LoadOff(&bmpField2) == DL_FAIL)LogError(L"Error releasing bmpField2");
@@ -438,7 +446,7 @@ void NextLevel()
     bool ready = false;
     float tx = clW;
     float ty = clH / 2 - 50.0f;
-    float tex = tx + 300.0f;
+    float tex = tx + 400.0f;
     float tey = clH;
     D2D1_RECT_F TxtR = { tx,ty,tex,tey };
 
@@ -449,8 +457,8 @@ void NextLevel()
         if (bigText && TxtBrush)
             Draw->DrawText(L"НИВОТО ПРЕМИНАТО !", 19, bigText, TxtR, TxtBrush);
         Draw->EndDraw();
-        TxtR.left -= 5.0f;
-        TxtR.right -= 5.0f;
+        TxtR.left -= 3.0f;
+        TxtR.right -= 3.0f;
         if (TxtR.left <= clW / 2 - 100.0f)
         {
             Sleep(1000);
@@ -675,7 +683,7 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
 
             case VK_RIGHT:
                 Hero->SetDir(dirs::left);
-                Hero->Move((float)(level));
+                Hero->Move((float)(level));                 
                 break;
 
             case VK_CONTROL:
@@ -798,6 +806,27 @@ void Init2D()
     if (hr != S_OK)
     {
         LogError(L"Error creating draw TxtInactBrush");
+        ErrExit(eD2D);
+    }
+
+    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Green), &LifeBrush);
+    if (hr != S_OK)
+    {
+        LogError(L"Error creating draw LifeBrush");
+        ErrExit(eD2D);
+    }
+
+    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Orange), &HurtBrush);
+    if (hr != S_OK)
+    {
+        LogError(L"Error creating draw HurtBrush");
+        ErrExit(eD2D);
+    }
+
+    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red), &CritBrush);
+    if (hr != S_OK)
+    {
+        LogError(L"Error creating draw CritBrush");
         ErrExit(eD2D);
     }
 
@@ -1469,6 +1498,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 if (abs(Hero->x - Evil->x) <= 30)
                 {
                     Evil->lifes -= Hero->GetHit();
+                    if (Evil->lifes <= 0)Evil->SetState(states::fall);
+                    Hero->SetState(states::no_state);
                     Evil->SetHitArea(Evil->x, Evil->y);
                     vHits.push_back(Evil->HitArea);
                     score += 9 + level;
@@ -1489,6 +1520,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 if (abs(Hero->x - Evil->x) <= 50)
                 {
                     Evil->lifes -= Hero->GetHit() + 5;
+                    if (Evil->lifes <= 0)Evil->SetState(states::fall);
+                    Hero->SetState(states::no_state);
                     Evil->SetHitArea(Evil->x, Evil->y);
                     vHits.push_back(Evil->HitArea);
                     score += 9 + level;
@@ -1505,11 +1538,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 }
             }
 
-            if (Evil->GetState() == states::punch && rand() % 3 == 1)
+            if (Evil->GetState() == states::punch && rand() % 2 == 0)
             {
                 if (abs(Hero->x - Evil->x) <= 30)
                 {
                     Hero->lifes -= Evil->GetHit();
+                    if (Hero->lifes <= 0)Evil->SetState(states::fall);
+                    Evil->SetState(states::no_state);
                     Hero->SetHitArea(Hero->x, Hero->y);
                     vHits.push_back(Hero->HitArea);
                     if (Hero->GetDir() == dirs::left && Hero->x - 20 >= 0)
@@ -1524,11 +1559,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     }
                 }
             }
-            if (Evil->GetState() == states::kick && rand() % 3 == 1)
+            if (Evil->GetState() == states::kick && rand() % 2 == 0)
             {
                 if (abs(Hero->x - Evil->x) <= 50)
                 {
                     Hero->lifes -= Evil->GetHit() + 5;
+                    if (Hero->lifes <= 0)Evil->SetState(states::fall);
+                    Evil->SetState(states::no_state);
                     Hero->SetHitArea(Hero->x, Hero->y);
                     vHits.push_back(Hero->HitArea);
                     if (Hero->GetDir() == dirs::left && Hero->x - 20 >= 0)
@@ -1902,6 +1939,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 }
             }
         }
+
+        if (Hero && Evil)
+        {
+            if (Hero->lifes > 80)
+                Draw->DrawLine(D2D1::Point2F(Hero->x, Hero->ey + 5.0f), D2D1::Point2F(Hero->x + Hero->lifes / 2, Hero->ey + 5.0f),
+                    LifeBrush, 5.0f);
+            else if (Hero->lifes > 30)
+                Draw->DrawLine(D2D1::Point2F(Hero->x, Hero->ey + 5.0f), D2D1::Point2F(Hero->x + Hero->lifes / 2, Hero->ey + 5.0f),
+                    HurtBrush, 5.0f);
+            else Draw->DrawLine(D2D1::Point2F(Hero->x, Hero->ey + 5.0f), D2D1::Point2F(Hero->x + Hero->lifes / 2, Hero->ey + 5.0f),
+                CritBrush, 5.0f);
+
+            if (Evil->lifes > 80)
+                Draw->DrawLine(D2D1::Point2F(Evil->x, Evil->ey + 5.0f), D2D1::Point2F(Evil->x + Evil->lifes / 2, Evil->ey + 5.0f),
+                    LifeBrush, 5.0f);
+            else if (Evil->lifes > 30)
+                Draw->DrawLine(D2D1::Point2F(Evil->x, Evil->ey + 5.0f), D2D1::Point2F(Evil->x + Evil->lifes / 2, Evil->ey + 5.0f),
+                    HurtBrush, 5.0f);
+            else Draw->DrawLine(D2D1::Point2F(Evil->x, Evil->ey + 5.0f), D2D1::Point2F(Evil->x + Evil->lifes / 2, Evil->ey + 5.0f),
+                CritBrush, 5.0f);
+
+        }
+
 
         ////////////////////////////////////////////
         Draw->EndDraw();

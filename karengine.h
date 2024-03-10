@@ -151,20 +151,20 @@ class KARENGINE_API PERSON :public OBJECT
 		{
 			if (my_state != states::walk)return DL_FAIL;
 
-			speed *= _gear;
+			float gear = speed * _gear;
 
 			switch (my_dir)
 			{
 			case dirs::left:
-				if (ex + speed > scr_width)return DL_FAIL;
-				x += speed;
+				if (ex + gear > scr_width)return DL_FAIL;
+				x += gear;
 				SetEdges();
 				return DL_OK;
 				break;
 
 			case dirs::right:
-				if (x - speed < 0)return DL_FAIL;
-				x -= speed;
+				if (x - gear < 0)return DL_FAIL;
+				x -= gear;
 				SetEdges();
 				return DL_OK;
 				break;
