@@ -114,6 +114,11 @@ class KARENGINE_API PERSON :public OBJECT
 		}
 		virtual ~PERSON() {};
 		
+		types GetType() const
+		{
+			return my_type;
+		}
+		
 		void SetAttack(int _strenght)
 		{
 			attack = _strenght;
