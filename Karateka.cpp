@@ -1498,20 +1498,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 if (abs(Hero->x - Evil->x) <= 30)
                 {
                     Evil->lifes -= Hero->GetHit();
-                    if (Evil->lifes <= 0)Evil->SetState(states::fall);
-                    Hero->SetState(states::no_state);
-                    Evil->SetHitArea(Evil->x, Evil->y);
-                    vHits.push_back(Evil->HitArea);
-                    score += 9 + level;
-                    if (Evil->GetDir() == dirs::left && Evil->x - 20 >= 0)
+                    if (Evil->lifes <= 0)
                     {
-                        Evil->x -= 20;
-                        Evil->SetEdges();
+                        Evil->SetState(states::fall);
+                        Hero->SetState(states::no_state);
                     }
-                    if (Evil->GetDir() == dirs::right && Evil->ex + 20 <= clW)
+                    else
                     {
-                        Evil->x += 20;
-                        Evil->SetEdges();
+                        Evil->SetHitArea(Evil->x, Evil->y);
+                        vHits.push_back(Evil->HitArea);
+                        score += 9 + level;
+                        if (Evil->GetDir() == dirs::left && Evil->x - 20 >= 0)
+                        {
+                            Evil->x -= 20;
+                            Evil->SetEdges();
+                        }
+                        if (Evil->GetDir() == dirs::right && Evil->ex + 20 <= clW)
+                        {
+                            Evil->x += 20;
+                            Evil->SetEdges();
+                        }
                     }
                 }
             }
@@ -1520,20 +1526,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 if (abs(Hero->x - Evil->x) <= 50)
                 {
                     Evil->lifes -= Hero->GetHit() + 5;
-                    if (Evil->lifes <= 0)Evil->SetState(states::fall);
-                    Hero->SetState(states::no_state);
-                    Evil->SetHitArea(Evil->x, Evil->y);
-                    vHits.push_back(Evil->HitArea);
-                    score += 9 + level;
-                    if (Evil->GetDir() == dirs::left && Evil->x - 20 >= 0)
+                    if (Evil->lifes <= 0)
                     {
-                        Evil->x -= 20;
-                        Evil->SetEdges();
+                        Evil->SetState(states::fall);
+                        Hero->SetState(states::no_state);
                     }
-                    if (Evil->GetDir() == dirs::right && Evil->ex + 20 <= clW)
+                    else
                     {
-                        Evil->x += 20;
-                        Evil->SetEdges();
+                        Evil->SetHitArea(Evil->x, Evil->y);
+                        vHits.push_back(Evil->HitArea);
+                        score += 9 + level;
+                        if (Evil->GetDir() == dirs::left && Evil->x - 20 >= 0)
+                        {
+                            Evil->x -= 20;
+                            Evil->SetEdges();
+                        }
+                        if (Evil->GetDir() == dirs::right && Evil->ex + 20 <= clW)
+                        {
+                            Evil->x += 20;
+                            Evil->SetEdges();
+                        }
                     }
                 }
             }
@@ -1543,19 +1555,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 if (abs(Hero->x - Evil->x) <= 30)
                 {
                     Hero->lifes -= Evil->GetHit();
-                    if (Hero->lifes <= 0)Evil->SetState(states::fall);
-                    Evil->SetState(states::no_state);
-                    Hero->SetHitArea(Hero->x, Hero->y);
-                    vHits.push_back(Hero->HitArea);
-                    if (Hero->GetDir() == dirs::left && Hero->x - 20 >= 0)
+                    if (Hero->lifes <= 0)
                     {
-                        Hero->x -= 20;
-                        Hero->SetEdges();
+                        Hero->SetState(states::fall);
+                        Evil->SetState(states::no_state);
                     }
-                    if (Hero->GetDir() == dirs::right && Hero->ex + 20 <= clW)
+                    else
                     {
-                        Hero->x += 20;
-                        Hero->SetEdges();
+                        Hero->SetHitArea(Hero->x, Hero->y);
+                        vHits.push_back(Hero->HitArea);
+                        if (Hero->GetDir() == dirs::left && Hero->x - 20 >= 0)
+                        {
+                            Hero->x -= 20;
+                            Hero->SetEdges();
+                        }
+                        if (Hero->GetDir() == dirs::right && Hero->ex + 20 <= clW)
+                        {
+                            Hero->x += 20;
+                            Hero->SetEdges();
+                        }
                     }
                 }
             }
@@ -1564,19 +1582,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 if (abs(Hero->x - Evil->x) <= 50)
                 {
                     Hero->lifes -= Evil->GetHit() + 5;
-                    if (Hero->lifes <= 0)Evil->SetState(states::fall);
-                    Evil->SetState(states::no_state);
-                    Hero->SetHitArea(Hero->x, Hero->y);
-                    vHits.push_back(Hero->HitArea);
-                    if (Hero->GetDir() == dirs::left && Hero->x - 20 >= 0)
+                    if (Hero->lifes <= 0)
                     {
-                        Hero->x -= 20;
-                        Hero->SetEdges();
+                        Hero->SetState(states::fall);
+                        Evil->SetState(states::no_state);
                     }
-                    if (Hero->GetDir() == dirs::right && Hero->ex + 20 <= clW)
+                    else
                     {
-                        Hero->x += 20;
-                        Hero->SetEdges();
+                        Hero->SetHitArea(Hero->x, Hero->y);
+                        vHits.push_back(Hero->HitArea);
+                        if (Hero->GetDir() == dirs::left && Hero->x - 20 >= 0)
+                        {
+                            Hero->x -= 20;
+                            Hero->SetEdges();
+                        }
+                        if (Hero->GetDir() == dirs::right && Hero->ex + 20 <= clW)
+                        {
+                            Hero->x += 20;
+                            Hero->SetEdges();
+                        }
                     }
                 }
             }
