@@ -1472,6 +1472,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     Evil->SetHitArea(Evil->x, Evil->y);
                     vHits.push_back(Evil->HitArea);
                     score += 9 + level;
+                    if (Evil->GetDir() == dirs::left && Evil->x - 20 >= 0)
+                    {
+                        Evil->x -= 20;
+                        Evil->SetEdges();
+                    }
+                    if (Evil->GetDir() == dirs::right && Evil->ex + 20 <= clW)
+                    {
+                        Evil->x += 20;
+                        Evil->SetEdges();
+                    }
                 }
             }
             if (Hero->GetState() == states::kick && rand() % 3 == 1)
@@ -1482,6 +1492,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     Evil->SetHitArea(Evil->x, Evil->y);
                     vHits.push_back(Evil->HitArea);
                     score += 9 + level;
+                    if (Evil->GetDir() == dirs::left && Evil->x - 20 >= 0)
+                    {
+                        Evil->x -= 20;
+                        Evil->SetEdges();
+                    }
+                    if (Evil->GetDir() == dirs::right && Evil->ex + 20 <= clW)
+                    {
+                        Evil->x += 20;
+                        Evil->SetEdges();
+                    }
                 }
             }
 
@@ -1492,6 +1512,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     Hero->lifes -= Evil->GetHit();
                     Hero->SetHitArea(Hero->x, Hero->y);
                     vHits.push_back(Hero->HitArea);
+                    if (Hero->GetDir() == dirs::left && Hero->x - 20 >= 0)
+                    {
+                        Hero->x -= 20;
+                        Hero->SetEdges();
+                    }
+                    if (Hero->GetDir() == dirs::right && Hero->ex + 20 <= clW)
+                    {
+                        Hero->x += 20;
+                        Hero->SetEdges();
+                    }
                 }
             }
             if (Evil->GetState() == states::kick && rand() % 3 == 1)
@@ -1501,6 +1531,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     Hero->lifes -= Evil->GetHit() + 5;
                     Hero->SetHitArea(Hero->x, Hero->y);
                     vHits.push_back(Hero->HitArea);
+                    if (Hero->GetDir() == dirs::left && Hero->x - 20 >= 0)
+                    {
+                        Hero->x -= 20;
+                        Hero->SetEdges();
+                    }
+                    if (Hero->GetDir() == dirs::right && Hero->ex + 20 <= clW)
+                    {
+                        Hero->x += 20;
+                        Hero->SetEdges();
+                    }
                 }
             }
         }
