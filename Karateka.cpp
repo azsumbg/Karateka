@@ -211,6 +211,8 @@ objPtr Cloud2 = nullptr;
 
 ACTIONCLASS* EvilFSM = nullptr;
 
+std::vector<HITPLOT> vHits;
+
 //////////////////////////////////////////
 template <typename COM> BOOL LoadOff(COM** which)
 {
@@ -361,7 +363,7 @@ void InitGame()
     score = 0;
     level = 1;
     fall_cooldown = 100;
-
+    
     wcscpy_s(current_player, L"ONE NINJA");
     name_set = false;
     win_game = false;
@@ -371,6 +373,8 @@ void InitGame()
     LoadOff(&Hero);
     LoadOff(&Evil);
     LoadOff(&EvilFSM);
+
+    vHits.clear();
 
     Cloud1 = OBJECT::CreateObject(-100.0f, 103.0f, 100.0f, 53.0f);
     Cloud2 = OBJECT::CreateObject(clW, 102.0f, 80.0f, 42.0f);
@@ -399,6 +403,7 @@ void NextLevel()
     if (sound)mciSendString(L"play .\\res\\snd\\levelup.wav", NULL, NULL, NULL);
     level++;
     fall_cooldown = 100;
+    vHits.clear();
 
     LoadOff(&Cloud1);
     LoadOff(&Cloud2);
@@ -1457,6 +1462,30 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             }
         }
 
+        if (Hero && Evil)
+        {
+            if (Hero->GetState() == states::punch && rand() % 3 == 1)
+            {
+                if (abs(Hero->x - Evil->x) <= 30)
+                {
+                    Evil->lifes -= Hero->GetHit();
+                    Evil->SetHitArea(Evil->x, Evil->y);
+                    vHits.push_back(Evil->HitArea);
+                    score += 9 + level;
+                }
+            }
+
+            if (Hero->GetState() == states::kick && rand() % 3 == 1)
+            {
+                if (abs(Hero->x - Evil->x) <= 50)
+                {
+                    Evil->lifes -= Hero->GetHit() + 5;
+                    Evil->SetHitArea(Evil->x, Evil->y);
+                    vHits.push_back(Evil->HitArea);
+                    score += 9 + level;
+                }
+            }
+        }
 
 
         ///////////////////////////////////////////
@@ -1796,6 +1825,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                         else if (Evil->GetStateFrame(states::kick) == 2)
                             Draw->DrawBitmap(bmpBossKick3R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
                     }
+                    break;
+                }
+            }
+        }
+
+        if (!vHits.empty())
+        {
+            for (int i = 0; i < vHits.size(); ++i)
+            {
+                Draw->DrawBitmap(bmpHit, D2D1::RectF(vHits[i].x, vHits[i].y, vHits[i].ex, vHits[i].ey));
+                vHits[i].cooldown--;
+                if (vHits[i].cooldown <= 0)
+                {
+                    vHits.erase(vHits.begin() + i);
                     break;
                 }
             }

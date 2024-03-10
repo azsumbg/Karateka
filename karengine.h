@@ -126,8 +126,6 @@ class KARENGINE_API PERSON :public OBJECT
 		int GetHit()
 		{
 			if (my_state == states::walk || my_state == states::no_state)return 0;
-			my_state = states::walk;
-			my_dir = dirs::stop;
 			return attack;
 		}
 		
@@ -137,7 +135,7 @@ class KARENGINE_API PERSON :public OBJECT
 			HitArea.y = _where_y;
 			HitArea.ex = _where_x + 15.0f;
 			HitArea.ey = _where_y + 13.0f;
-			HitArea.cooldown = 80;
+			HitArea.cooldown = 50;
 		}
 		int HitAreaCooldown()
 		{
