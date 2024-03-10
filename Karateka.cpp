@@ -71,6 +71,7 @@ bool b1Hglt = false;
 bool b2Hglt = false;
 bool b3Hglt = false;
 bool name_set = false;
+bool win_game = false;
 
 wchar_t current_player[16] = L"ONE NINJA";
 
@@ -78,6 +79,7 @@ float clH = 0;
 float clW = 0;
 int level = 1;
 int score = 0;
+int fall_cooldown = 100;
 
 ///////////////////////////////////////////////
 
@@ -358,8 +360,11 @@ void InitGame()
 {
     score = 0;
     level = 1;
+    fall_cooldown = 100;
+
     wcscpy_s(current_player, L"ONE NINJA");
     name_set = false;
+    win_game = false;
 
     LoadOff(&Cloud1);
     LoadOff(&Cloud2);
@@ -388,6 +393,65 @@ void GameOver()
 
     bMsg.message = WM_QUIT;
     bMsg.wParam = 0;
+}
+void NextLevel()
+{
+    if (sound)mciSendString(L"play .\\res\\snd\\levelup.wav", NULL, NULL, NULL);
+    level++;
+    fall_cooldown = 100;
+
+    LoadOff(&Cloud1);
+    LoadOff(&Cloud2);
+    LoadOff(&Hero);
+    LoadOff(&Evil);
+    LoadOff(&EvilFSM);
+
+    Cloud1 = OBJECT::CreateObject(-100.0f, 103.0f, 100.0f, 53.0f);
+    Cloud2 = OBJECT::CreateObject(clW, 102.0f, 80.0f, 42.0f);
+    Cloud1->SetDir(dirs::right);
+    Cloud2->SetDir(dirs::left);
+
+    Hero = PersFactory(50.0f, clH - 100.0f, types::hero);
+    switch (level)
+    {
+    case 2:
+        Evil = PersFactory(clW - 100.0f, clH - 100.0f, types::evil2);
+        break;
+
+    case 3:
+        Evil = PersFactory(clW - 100.0f, clH - 100.0f, types::evil3);
+        break;
+
+    case 4:
+        Evil = PersFactory(clW - 100.0f, clH - 100.0f, types::boss);
+        break;
+    }
+    Evil->SetDir(dirs::right);
+
+    ACTIONCLASS::CreateFSM(Evil->lifes, Hero->lifes, Evil->x - Hero->ex, &EvilFSM);
+
+    bool ready = false;
+    float tx = clW;
+    float ty = clH / 2 - 50.0f;
+    float tex = tx + 300.0f;
+    float tey = clH;
+    D2D1_RECT_F TxtR = { tx,ty,tex,tey };
+
+    while (!ready)
+    {
+        Draw->BeginDraw();
+        Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkMagenta));
+        if (bigText && TxtBrush)
+            Draw->DrawText(L"НИВОТО ПРЕМИНАТО !", 19, bigText, TxtR, TxtBrush);
+        Draw->EndDraw();
+        TxtR.left -= 5.0f;
+        TxtR.right -= 5.0f;
+        if (TxtR.left <= clW / 2 - 100.0f)
+        {
+            Sleep(1000);
+            ready = true;
+        }
+    }
 }
 
 INT_PTR CALLBACK bDlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
@@ -1295,6 +1359,7 @@ void Init2D()
             Draw->DrawText(secondline, 11, bigText, Line2R, TxtBrush);
         Draw->EndDraw();
     }
+    Sleep(1500);
 }
 
 ///////////////////////////////////////////////
@@ -1739,6 +1804,30 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         ////////////////////////////////////////////
         Draw->EndDraw();
 
+        if(Hero)
+            if (Hero->GetState() == states::fall)
+            {
+                fall_cooldown--;
+                if (fall_cooldown < 0)GameOver();
+            }
+
+        if (Evil)
+        {
+            if (Evil->GetState() == states::fall)
+            {
+                if (Evil->GetType() != types::boss)
+                {
+                    score += 50;
+                    fall_cooldown--;
+                    if (fall_cooldown < 0)NextLevel();
+                }
+                else
+                {
+                    win_game = true;
+                    GameOver();
+                }
+            }
+        }
     }
 
     std::remove(tmp_file);
