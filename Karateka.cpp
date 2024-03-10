@@ -1474,7 +1474,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     score += 9 + level;
                 }
             }
-
             if (Hero->GetState() == states::kick && rand() % 3 == 1)
             {
                 if (abs(Hero->x - Evil->x) <= 50)
@@ -1483,6 +1482,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     Evil->SetHitArea(Evil->x, Evil->y);
                     vHits.push_back(Evil->HitArea);
                     score += 9 + level;
+                }
+            }
+
+            if (Evil->GetState() == states::punch && rand() % 3 == 1)
+            {
+                if (abs(Hero->x - Evil->x) <= 30)
+                {
+                    Hero->lifes -= Evil->GetHit();
+                    Hero->SetHitArea(Hero->x, Hero->y);
+                    vHits.push_back(Hero->HitArea);
+                }
+            }
+            if (Evil->GetState() == states::kick && rand() % 3 == 1)
+            {
+                if (abs(Hero->x - Evil->x) <= 50)
+                {
+                    Hero->lifes -= Evil->GetHit() + 5;
+                    Hero->SetHitArea(Hero->x, Hero->y);
+                    vHits.push_back(Hero->HitArea);
                 }
             }
         }
@@ -1834,9 +1852,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         {
             for (int i = 0; i < vHits.size(); ++i)
             {
-                Draw->DrawBitmap(bmpHit, D2D1::RectF(vHits[i].x, vHits[i].y, vHits[i].ex, vHits[i].ey));
+                Draw->DrawBitmap(bmpHit, D2D1::RectF(vHits[i].x + 50.0f, vHits[i].y + 20.0f, vHits[i].ex + 50.0f, 
+                    vHits[i].ey + 20.0f));
                 vHits[i].cooldown--;
-                if (vHits[i].cooldown <= 0)
+                if (vHits[i].cooldown <= 20)
                 {
                     vHits.erase(vHits.begin() + i);
                     break;
