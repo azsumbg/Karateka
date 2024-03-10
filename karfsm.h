@@ -35,10 +35,15 @@ class KARFSM_API ACTIONCLASS
 	public:
 		FSM_NODE Node;
 
-		static void CreateFSM(int _my_lifes, int _enemy_lifes, float _distance, ACTIONCLASS* new_object);
+		static void CreateFSM(int _my_lifes, int _enemy_lifes, float _distance, ACTIONCLASS** new_object);
 
 		void SetInfo(int _my_lifes, int _enemy_lifes, float _distance);
 		
 		actions WhatToDo();
+
+		void Release()
+		{
+			delete this;
+		}
 		
 };

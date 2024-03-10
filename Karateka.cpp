@@ -207,7 +207,7 @@ perPtr Evil = nullptr;
 objPtr Cloud1 = nullptr;
 objPtr Cloud2 = nullptr;
 
-
+ACTIONCLASS* EvilFSM = nullptr;
 
 //////////////////////////////////////////
 template <typename COM> BOOL LoadOff(COM** which)
@@ -365,6 +365,7 @@ void InitGame()
     LoadOff(&Cloud2);
     LoadOff(&Hero);
     LoadOff(&Evil);
+    LoadOff(&EvilFSM);
 
     Cloud1 = OBJECT::CreateObject(-100.0f, 103.0f, 100.0f, 53.0f);
     Cloud2 = OBJECT::CreateObject(clW, 102.0f, 80.0f, 42.0f);
@@ -373,6 +374,8 @@ void InitGame()
 
     Hero = PersFactory(50.0f, clH - 100.0f, types::hero);
     Evil = PersFactory(clW - 100.0f, clH - 100.0f, types::evil1);
+
+    ACTIONCLASS::CreateFSM(Evil->lifes, Hero->lifes, Evil->x - Hero->ex, &EvilFSM);
 }
 
 void GameOver()
@@ -1354,8 +1357,35 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         }
         ///////////////////////////////////////////
 
+        //FSM *************************************
+
+        if (Evil && EvilFSM && Hero)
+        {
+            if (Hero->ex <= Evil->x)
+                EvilFSM->SetInfo(Evil->lifes, Hero->lifes, Evil->x - Hero->ex);
+            else
+                EvilFSM->SetInfo(Evil->lifes, Hero->lifes, Hero->x - Evil->ex);
+
+            switch (EvilFSM->WhatToDo())
+            {
+            case actions::walk:
+                Evil->Move();
+                break;
+
+            case actions::punch:
+                if (rand() % (50 - level * 5) == 1)Evil->SetState(states::punch);
+                break;
+
+            case actions::kick:
+                if (rand() % (50 - level * 5) == 1)Evil->SetState(states::kick);
+                break;
+
+            }
+        }
 
 
+
+        ///////////////////////////////////////////
 
         //DRAW THINGS ********************************
         Draw->BeginDraw();
