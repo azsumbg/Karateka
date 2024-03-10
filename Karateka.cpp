@@ -1533,7 +1533,171 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     break;
                 }
             }
+            if (level == 2)
+            {
+                switch (Evil->GetState())
+                {
+                case states::walk:
+                    if (Evil->GetDir() == dirs::left)
+                        Draw->DrawBitmap(bmpNin2WalkL, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+
+                    else
+                        Draw->DrawBitmap(bmpNin2WalkR, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    break;
+
+                case states::fall:
+                    if (Evil->GetDir() == dirs::left)
+                        Draw->DrawBitmap(bmpNin2FallL, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    else
+                        Draw->DrawBitmap(bmpNin2FallR, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    break;
+
+                case states::punch:
+                    if (Evil->GetDir() == dirs::left)
+                        Draw->DrawBitmap(bmpNin2PunchL, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    else
+                        Draw->DrawBitmap(bmpNin2PunchR, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    break;
+
+                case states::kick:
+                    if (Evil->GetDir() == dirs::left)
+                    {
+                        if (Evil->GetStateFrame(states::kick) == 0)
+                            Draw->DrawBitmap(bmpNin2Kick1L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::kick) == 1)
+                            Draw->DrawBitmap(bmpNin2Kick2L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    }
+                    else
+                    {
+                        if (Evil->GetStateFrame(states::kick) == 0)
+                            Draw->DrawBitmap(bmpNin2Kick1R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::kick) == 1)
+                            Draw->DrawBitmap(bmpNin2Kick2R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    }
+                    break;
+                }
+            }
+            if (level == 3)
+            {
+                switch (Evil->GetState())
+                {
+                case states::walk:
+                    if (Evil->GetDir() == dirs::left)
+                        Draw->DrawBitmap(bmpNin3WalkL, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    else
+                        Draw->DrawBitmap(bmpNin3WalkR, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    break;
+
+                case states::fall:
+                    if (Evil->GetDir() == dirs::left)
+                        Draw->DrawBitmap(bmpNin3FallL, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    else
+                        Draw->DrawBitmap(bmpNin3FallR, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    break;
+
+                case states::punch:
+                    if (Evil->GetDir() == dirs::left)
+                    {
+                        if (Evil->GetStateFrame(states::punch) == 0)
+                            Draw->DrawBitmap(bmpNin3Punch1L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::punch) == 1)
+                            Draw->DrawBitmap(bmpNin3Punch2L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    }
+                    else
+                    {
+                        if (Evil->GetStateFrame(states::punch) == 0)
+                            Draw->DrawBitmap(bmpNin3Punch1R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::punch) == 1)
+                            Draw->DrawBitmap(bmpNin3Punch2R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    }
+                    break;
+
+                case states::kick:
+                    if (Evil->GetDir() == dirs::left)
+                    {
+                        if (Evil->GetStateFrame(states::kick) == 0)
+                            Draw->DrawBitmap(bmpNin3Kick1L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::kick) == 1)
+                            Draw->DrawBitmap(bmpNin3Kick2L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    }
+                    else
+                    {
+                        if (Evil->GetStateFrame(states::kick) == 0)
+                            Draw->DrawBitmap(bmpNin3Kick1R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::kick) == 1)
+                            Draw->DrawBitmap(bmpNin3Kick2R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    }
+                    break;
+                }
+            }
+            if (level == 4)
+            {
+                switch (Evil->GetState())
+                {
+                case states::walk:
+                    if (Evil->GetDir() == dirs::left)
+                    {
+                        if (Evil->GetStateFrame(states::walk) == 0)
+                            Draw->DrawBitmap(bmpBossWalk1L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::walk) == 1)
+                            Draw->DrawBitmap(bmpBossWalk2L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::walk) == 2)
+                            Draw->DrawBitmap(bmpBossWalk3L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::walk) == 3)
+                            Draw->DrawBitmap(bmpBossWalk3L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    }
+                    else
+                    {
+                        if (Evil->GetStateFrame(states::walk) == 0)
+                            Draw->DrawBitmap(bmpBossWalk1R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::walk) == 1)
+                            Draw->DrawBitmap(bmpBossWalk2R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::walk) == 2)
+                            Draw->DrawBitmap(bmpBossWalk3R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::walk) == 3)
+                            Draw->DrawBitmap(bmpBossWalk3R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    }
+                    break;
+
+                case states::fall:
+                    if (Evil->GetDir() == dirs::left)
+                        Draw->DrawBitmap(bmpBossFallL, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    else
+                        Draw->DrawBitmap(bmpBossFallR, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    break;
+
+                case states::punch:
+                    if (Evil->GetDir() == dirs::left)
+                        Draw->DrawBitmap(bmpBossPunchL, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    else
+                        Draw->DrawBitmap(bmpBossPunchR, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    break;
+
+                case states::kick:
+                    if (Evil->GetDir() == dirs::left)
+                    {
+                        if (Evil->GetStateFrame(states::kick) == 0)
+                            Draw->DrawBitmap(bmpBossKick1L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::kick) == 1)
+                            Draw->DrawBitmap(bmpBossKick2L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::kick) == 2)
+                            Draw->DrawBitmap(bmpBossKick3L, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    }
+                    else
+                    {
+                        if (Evil->GetStateFrame(states::kick) == 0)
+                            Draw->DrawBitmap(bmpBossKick1R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::kick) == 1)
+                            Draw->DrawBitmap(bmpBossKick2R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                        else if (Evil->GetStateFrame(states::kick) == 2)
+                            Draw->DrawBitmap(bmpBossKick3R, D2D1::RectF(Evil->x, Evil->y, Evil->ex, Evil->ey));
+                    }
+                    break;
+                }
+            }
         }
+
+        ////////////////////////////////////////////
         Draw->EndDraw();
 
     }
