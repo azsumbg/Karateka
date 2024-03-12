@@ -149,7 +149,7 @@ class KARENGINE_API PERSON :public OBJECT
 		}
 		BOOL Move(float _gear = 1.0f) 
 		{
-			if (my_state != states::walk)return DL_FAIL;
+			if (my_state != states::walk && my_state != states::no_state)return DL_FAIL;
 
 			float gear = speed * _gear;
 
