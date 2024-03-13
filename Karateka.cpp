@@ -698,6 +698,43 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
         }
         break;
 
+    case WM_LBUTTONDOWN:
+        if (cur_pos.y > 50)break;
+        if (cur_pos.x > b1Rect.left && cur_pos.x < b1Rect.right)
+        {
+            if (name_set)
+            {
+                if (sound)mciSendString(L"play .\\res\\snd\\negative.wav", NULL, NULL, NULL);
+                break;
+            }
+            else
+            {
+                if (sound)mciSendString(L"play .\\res\\snd\\select.wav", NULL, NULL, NULL);
+                if (DialogBox(bIns, MAKEINTRESOURCE(IDD_PLAYER), hwnd, &bDlgProc) == IDOK)name_set = true;
+                break;
+            }
+        }
+        if (cur_pos.x > b2Rect.left && cur_pos.x < b2Rect.right)
+        {
+            if (sound)
+            {
+                mciSendString(L"play .\\res\\snd\\select.wav", NULL, NULL, NULL);
+                sound = false;
+                PlaySound(NULL, NULL, NULL);
+                break;
+            }
+            else
+            {
+                mciSendString(L"play .\\res\\snd\\select.wav", NULL, NULL, NULL);
+                sound = false;
+                PlaySound(snd_file, NULL, SND_ASYNC | SND_LOOP);
+                break;
+            }
+            
+        }
+
+        break;
+
 
     default: return DefWindowProc(hwnd, ReceivedMsg, wParam, lParam);
     }
@@ -789,14 +826,14 @@ void Init2D()
         ErrExit(eD2D);
     }
 
-    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::YellowGreen), &TxtBrush);
+    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Bisque), &TxtBrush);
     if (hr != S_OK)
     {
         LogError(L"Error creating draw TxtBrush");
         ErrExit(eD2D);
     }
 
-    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::AliceBlue), &TxtHgltBrush);
+    hr = Draw->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::YellowGreen), &TxtHgltBrush);
     if (hr != S_OK)
     {
         LogError(L"Error creating draw TxtHgltBrush");
@@ -1576,7 +1613,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             }
         }
 
-
         if (Evil)
         {
             if (Evil->lifes <= 0)
@@ -1954,26 +1990,47 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         {
          
             if (Hero->lifes > 80)
-                Draw->DrawLine(D2D1::Point2F(Hero->x, Hero->y - 5.0f), D2D1::Point2F(Hero->x + Hero->lifes / 2, Hero->y - 5.0f),
-                    LifeBrush, 5.0f);
+                Draw->DrawLine(D2D1::Point2F(Hero->x, Hero->y - 5.0f), D2D1::Point2F(Hero->x + (float)(Hero->lifes / 2), 
+                    Hero->y - 5.0f), LifeBrush, 5.0f);
             else if (Hero->lifes > 30)
-                Draw->DrawLine(D2D1::Point2F(Hero->x, Hero->y - 5.0f), D2D1::Point2F(Hero->x + Hero->lifes / 2, Hero->y - 5.0f),
-                    HurtBrush, 5.0f);
+                Draw->DrawLine(D2D1::Point2F(Hero->x, Hero->y - 5.0f), D2D1::Point2F(Hero->x + (float)(Hero->lifes / 2), 
+                    Hero->y - 5.0f), HurtBrush, 5.0f);
             else if (Hero->lifes > 0)
-                Draw->DrawLine(D2D1::Point2F(Hero->x, Hero->y - 5.0f), D2D1::Point2F(Hero->x + Hero->lifes / 2, Hero->y - 5.0f),
-                    CritBrush, 5.0f);
+                Draw->DrawLine(D2D1::Point2F(Hero->x, Hero->y - 5.0f), D2D1::Point2F(Hero->x + (float)(Hero->lifes / 2), 
+                    Hero->y - 5.0f), CritBrush, 5.0f);
 
             if (Evil->lifes > 80)
-                Draw->DrawLine(D2D1::Point2F(Evil->x, Evil->ey + 5.0f), D2D1::Point2F(Evil->x + Evil->lifes / 2, Evil->ey + 5.0f),
-                    LifeBrush, 5.0f);
+                Draw->DrawLine(D2D1::Point2F(Evil->x, Evil->ey + 5.0f), D2D1::Point2F(Evil->x + (float)(Evil->lifes / 2), 
+                    Evil->ey + 5.0f), LifeBrush, 5.0f);
             else if (Evil->lifes > 30)
-                Draw->DrawLine(D2D1::Point2F(Evil->x, Evil->ey + 5.0f), D2D1::Point2F(Evil->x + Evil->lifes / 2, Evil->ey + 5.0f),
-                    HurtBrush, 5.0f);
+                Draw->DrawLine(D2D1::Point2F(Evil->x, Evil->ey + 5.0f), D2D1::Point2F(Evil->x + (float)(Evil->lifes / 2), 
+                    Evil->ey + 5.0f), HurtBrush, 5.0f);
             else if (Evil->lifes > 0)
-                Draw->DrawLine(D2D1::Point2F(Evil->x, Evil->ey + 5.0f), D2D1::Point2F(Evil->x + Evil->lifes / 2, Evil->ey + 5.0f),
-                    CritBrush, 5.0f);
-
+                Draw->DrawLine(D2D1::Point2F(Evil->x, Evil->ey + 5.0f), D2D1::Point2F(Evil->x + (float)(Evil->lifes / 2), 
+                    Evil->ey + 5.0f), CritBrush, 5.0f);
         }
+
+        ////////////////////////////////////////////
+
+        wchar_t status_text[100] = L"\0";
+        wchar_t add[5] = L"\0";
+        int txt_size = 0;
+        wcscpy_s(status_text, current_player);
+        wcscat_s(status_text, L", ниво: ");
+        wsprintf(add, L"%d", level);
+        wcscat_s(status_text, add);
+        wcscat_s(status_text, L", резултат: ");
+        wsprintf(add, L"%d", score);
+        wcscat_s(status_text, add);
+
+        for (int i = 0; i < 100; i++)
+        {
+            if (status_text[i] != '\0')txt_size++;
+            else break;
+        }
+
+        if (nrmText && TxtBrush)
+            Draw->DrawTextW(status_text, txt_size, nrmText, D2D1::RectF(5.0f, 50.0f, clW, clH), TxtBrush);
 
         ////////////////////////////////////////////
         Draw->EndDraw();
