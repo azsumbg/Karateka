@@ -39,7 +39,7 @@ class KARFSM_API ACTIONCLASS
 
 		void SetInfo(int _my_lifes, int _enemy_lifes, float _distance);
 		
-		actions WhatToDo();
+		actions WhatToDo(bool in_fight = false);
 
 		void Release()
 		{

@@ -176,7 +176,6 @@ class KARENGINE_API PERSON :public OBJECT
 		virtual int GetStateFrame(states _what_stage) = 0;
 		BOOL SetState(states to_what)
 		{
-			if (my_state != states::walk && my_state != states::no_state)return DL_FAIL;
 			my_state = to_what;
 			state_stage = 0;
 			if (my_state == states::fall)
