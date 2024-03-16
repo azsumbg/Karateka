@@ -395,13 +395,98 @@ void InitGame()
 
     ACTIONCLASS::CreateFSM(Evil->lifes, Hero->lifes, Evil->x - Hero->ex, &EvilFSM);
 }
+BOOL CheckRecord()
+{
+    if (score < 1)return no_record;
+    if (win_game)score += 500;
+    int result = 0;
+    CheckFile(record_file, &result);
+    if (result == FILE_NOT_EXIST)
+    {
+        std::wofstream rec(record_file);
+        rec << score << std::endl;
+        for (int i = 0; i < 16; i++)rec << static_cast<int>(current_player[i]) << std::endl;
+        rec.close();
+        return first_record;
+    }
+    else
+    {
+        std::wifstream check(record_file);
+        check >> result;
+        check.close();
+    }
 
+    if (result < score)
+    {
+        std::wofstream rec(record_file);
+        rec << score << std::endl;
+        for (int i = 0; i < 16; i++)rec << static_cast<int>(current_player[i]) << std::endl;
+        rec.close();
+        return record;
+    }
+    return no_record;
+}
 void GameOver()
 {
     PlaySound(NULL, NULL, NULL);
-   
+    if (win_game)
+    {
+        if (sound)mciSendString(L"play .\\res\\snd\\win.wav", NULL, NULL, NULL);
+        for (int i = 0; i < 21; i++)
+        {
+            if (i % 2 == 0)
+            {
+                Draw->BeginDraw();
+                Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkViolet));
+                if (bigText && TxtBrush)
+                    Draw->DrawTextW(L"ПРЕВЪРТЯ ИГРАТА !", 18, bigText, D2D1::RectF(100.0f, clH / 2 - 100.0f, clW, clH), TxtBrush);
+                Draw->EndDraw();
+                Sleep(15);
+            }
+            else
+            {
+                Draw->BeginDraw();
+                Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkViolet));
+                Draw->EndDraw();
+                Sleep(15);
+            }
+        }
+        Sleep(2000);
+    }
 
+    wchar_t fintxt[50] = L"О, О, О ! ЗАГУБИ !";
+    D2D1_RECT_F txtbox = { 150.0f,clH / 2 - 100.0f,clW,clH };
+    int textsize = 0;
 
+    switch (CheckRecord())
+    {
+    case no_record:
+        if (sound)PlaySound(L".\\res\\snd\\loose.wav", NULL, SND_ASYNC);
+        break;
+
+    case first_record:
+        if (sound)PlaySound(L".\\res\\snd\\record.wav", NULL, SND_ASYNC);
+        wcscpy_s(fintxt, L"ПЪРВИ РЕКОРД !");
+        break;
+
+    case record:
+        if (sound)PlaySound(L".\\res\\snd\\record.wav", NULL, SND_ASYNC);
+        wcscpy_s(fintxt, L"СВЕТОВЕН РЕКОРД !");
+        break;
+    }
+
+    for (int i = 0; i < 50; i++)
+    {
+        if (fintxt[i] != '\0')textsize++;
+        else break;
+    }
+
+    Draw->BeginDraw();
+    Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkViolet));
+    if (bigText && TxtBrush)
+        Draw->DrawTextW(fintxt, textsize, bigText, txtbox, TxtBrush);
+    Draw->EndDraw();
+    Sleep(6500);
 
     bMsg.message = WM_QUIT;
     bMsg.wParam = 0;
@@ -467,6 +552,68 @@ void NextLevel()
         }
     }
 }
+void HallOfFame()
+{
+    int result = 0;
+    CheckFile(record_file, &result);
+    if (result == FILE_NOT_EXIST)
+    {
+        if (sound)MessageBeep(MB_ICONEXCLAMATION);
+        MessageBox(bHwnd, L"Все още няма рекорд на играта !\n\nПостарай се повече !",
+            L"Липсва файл !", MB_OK | MB_ICONEXCLAMATION | MB_APPLMODAL);
+        return;
+    }
+    
+    wchar_t rectxt[150] = L"KARATEKA: ";
+    wchar_t add[10] = L"\0";
+    wchar_t saved_player[16] = L"\0";
+    
+    D2D1_RECT_F txtbox = { 20.0f,100.0f,clW,clH };
+    int textsize = 0;
+    
+    std::wifstream check(record_file);
+    check >> result;
+    for (int i = 0; i < 16; i++)
+    {
+        int letter = 0;
+        check >> letter;
+        saved_player[i] = static_cast<wchar_t>(letter);
+    }
+    check.close();
+    wsprintf(add, L"%d", result);
+    wcscat_s(rectxt, saved_player);
+    wcscat_s(rectxt, L"\n\nСВЕТОВЕН РЕКОРД: ");
+    wcscat_s(rectxt, add);
+
+    if (sound)mciSendString(L"play .\\res\\snd\\tada.wav", NULL, NULL, NULL);
+    result = 0;
+    for (int i = 0; i < 150; i++)
+    {
+        if (rectxt[i] != '\0')result++;
+        else break;
+    }
+
+    for (int i = 0; i < 31; i++)
+    {
+        if (i % 2 == 0)
+        {
+            Draw->BeginDraw();
+            Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkViolet));
+            if (bigText && TxtBrush)
+                Draw->DrawTextW(rectxt, result, bigText, txtbox, TxtBrush);
+            Draw->EndDraw();
+            Sleep(15);
+        }
+        else
+        {
+            Draw->BeginDraw();
+            Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkViolet));
+            Draw->EndDraw();
+            Sleep(15);
+        }
+    }
+    Sleep(3000);
+}
 
 INT_PTR CALLBACK bDlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -529,7 +676,7 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
             AppendMenu(bMain, MF_STRING, mExit, L"Изход");
 
             AppendMenu(bStore, MF_STRING, mSave, L"Запази игра");
-            AppendMenu(bStore, MF_STRING, mLoad, L"зареди игра");
+            AppendMenu(bStore, MF_STRING, mLoad, L"Зареди игра");
             AppendMenu(bStore, MF_SEPARATOR, NULL, NULL);
             AppendMenu(bStore, MF_STRING, mHoF, L"Зала на славата");
 
@@ -668,7 +815,23 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
             SendMessage(hwnd, WM_CLOSE, NULL, NULL);
             break;
 
+        case mSave:
+            pause = true;
+            //SaveGame();
+            pause = false;
+            break;
 
+        case mLoad:
+            pause = true;
+            //LoadGame();
+            pause = false;
+            break;
+
+        case mHoF:
+            pause = true;
+            HallOfFame();
+            pause = false;
+            break;
         }
         break;
 
@@ -1394,7 +1557,7 @@ void Init2D()
     D2D1_RECT_F Line2R = { x2, y2, ex2, ey2 };
 
     wchar_t firstline[13] = L"KARATEKA 1.0";
-    wchar_t secondline[11] = L"dev.Daniel";
+    wchar_t secondline[12] = L"dev. Daniel";
 
     bool ready1 = false;
     bool ready2 = false;
@@ -1501,16 +1664,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         {
             EvilFSM->SetInfo(Evil->lifes, Hero->lifes, abs(Evil->x - Hero->x - 20.0f));
             
-            if (Hero->x > Evil->ex && Evil->GetDir() == dirs::right) Evil->SetDir(dirs::left);
+            if (Hero->x -20.0f  >= Evil->ex && Evil->GetDir() == dirs::right) Evil->SetDir(dirs::left);
+            if (Hero->ex + 20.0f <= Evil->x && Evil->GetDir() == dirs::left)Evil->SetDir(dirs::right);
             
-            if (Hero->x < Evil->ex && Evil->GetDir() == dirs::left)Evil->SetDir(dirs::right);
-            
-            if(level == 2 && Evil->GetState() == states::punch)
-            {
-                if (EvilFSM->WhatToDo(true) == actions::stop) Evil->SetState(states::walk);
-                
-            }
-            else
             switch (EvilFSM->WhatToDo())
             {
             case actions::walk:
@@ -1523,12 +1679,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
             case actions::punch:
                 if (Evil->GetState() == states::fall)break;
-                if (rand() % (100 - level) == 1)Evil->SetState(states::punch);
+                if (rand() % (80 - level * 10) == 1)Evil->SetState(states::punch);
                 break;
 
             case actions::kick:
                 if (Evil->GetState() == states::fall)break;
-                if (rand() % (105 - level) == 1)Evil->SetState(states::kick);
+                if (rand() % (85 - level * 10) == 1)Evil->SetState(states::kick);
                 break;
 
             case actions::stop:
@@ -1542,9 +1698,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         {
             if (Hero->GetState() == states::punch && rand() % 3 == 1)
             {
-                if (abs(Hero->x - Evil->x) <= 30)
+                if (abs(Hero->x - Evil->x) <= 40)
                 {
                     Evil->lifes -= Hero->GetHit();
+                    if (sound)mciSendString(L"play .\\res\\snd\\badhurt.wav", NULL, NULL, NULL);
                     Evil->SetHitArea(Evil->x, Evil->y);
                     vHits.push_back(Evil->HitArea);
                     score += 9 + level;
@@ -1566,6 +1723,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 if (abs(Hero->x - Evil->x) <= 50)
                 {
                     Evil->lifes -= Hero->GetHit() + 5;
+                    if (sound)mciSendString(L"play .\\res\\snd\\badhurt.wav", NULL, NULL, NULL);
                     Evil->SetHitArea(Evil->x, Evil->y);
                     vHits.push_back(Evil->HitArea);
                     score += 9 + level;
@@ -1585,9 +1743,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
             if (Evil->GetState() == states::punch && rand() % 2 == 0)
             {
-                if (abs(Hero->ex - Evil->x) <= 30)
+                if (abs(Hero->ex - Evil->x) <= 40)
                 {
                     Hero->lifes -= Evil->GetHit();
+                    if (sound)mciSendString(L"play .\\res\\snd\\hurt.wav", NULL, NULL, NULL);
                     Hero->SetHitArea(Hero->x, Hero->y);
                     vHits.push_back(Hero->HitArea);
                     if (Hero->GetDir() == dirs::left && Hero->x - 20 >= 0)
@@ -1608,6 +1767,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 if (abs(Hero->x - Evil->x) <= 50)
                 {
                     Hero->lifes -= Evil->GetHit() + 5;
+                    if (sound)mciSendString(L"play .\\res\\snd\\hurt.wav", NULL, NULL, NULL);
                     Hero->SetHitArea(Hero->x, Hero->y);
                     vHits.push_back(Hero->HitArea);
                     if (Hero->GetDir() == dirs::left && Hero->x - 20 >= 0)
