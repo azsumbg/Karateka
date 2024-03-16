@@ -665,6 +665,7 @@ void SaveGame()
         save << Evil->lifes << std::endl;
     }
 
+    if (sound)mciSendString(L"play .\\res\\snd\\save.wav", NULL, NULL, NULL);
     MessageBox(bHwnd, L"Играта е запазена !", L"Запис !", MB_OK | MB_APPLMODAL | MB_ICONINFORMATION);
 }
 void LoadGame()
@@ -753,9 +754,51 @@ void LoadGame()
         Evil->lifes = result;
     }
     save.close();
+    Evil->SetDir(dirs::right);
 
     ACTIONCLASS::CreateFSM(Evil->lifes, Hero->lifes, Evil->x - Hero->ex, &EvilFSM);
+    if (sound)mciSendString(L"play .\\res\\snd\\save.wav", NULL, NULL, NULL);
     MessageBox(bHwnd, L"Играта е заредена !", L"Зареждане !", MB_OK | MB_APPLMODAL | MB_ICONINFORMATION);
+}
+void ShowHelp()
+{
+    wchar_t hlp_txt[1000] = L"\0";
+    D2D1_RECT_F hlp_box = { 100.0f,clH,clW,clH + 400.0f };
+
+    int result = 0;
+    CheckFile(hlp_file, &result);
+    if (result == FILE_NOT_EXIST)
+    {
+        if (sound)MessageBeep(MB_ICONERROR);
+        MessageBox(bHwnd, L"Не е налична помощ за играта !\n\nСвържете се с разработчика !",
+            L"Липсва файл !", MB_OK | MB_ICONERROR | MB_APPLMODAL);
+        return;
+    }
+
+    std::wifstream help(hlp_file);
+    help >> result;
+    for (int i = 0; i < result; i++)
+    {
+        int letter = 0;
+        help >> letter;
+        hlp_txt[i] = static_cast<wchar_t>(letter);
+    }
+    help.close();
+
+    bool ready = false;
+
+    while (!ready)
+    {
+        Draw->BeginDraw();
+        Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkBlue));
+        if (nrmText && TxtBrush)
+            Draw->DrawTextW(hlp_txt, result, nrmText, hlp_box, TxtBrush);
+        Draw->EndDraw();
+
+        hlp_box.top -= 0.5f;
+        hlp_box.bottom -= 0.5f;
+        if (hlp_box.bottom <= 50.0f)ready = true;
+    }
 }
 
 INT_PTR CALLBACK bDlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
@@ -1049,9 +1092,16 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
             }
             
         }
-
+        if (cur_pos.x > b3Rect.left && cur_pos.x < b3Rect.right)
+        {
+            if (!show_help)
+            {
+                show_help = true;
+                ShowHelp();
+            }
+            show_help = false;
+        }
         break;
-
 
     default: return DefWindowProc(hwnd, ReceivedMsg, wParam, lParam);
     }
