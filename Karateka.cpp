@@ -54,6 +54,7 @@ POINT cur_pos = { 0,0 };
 HMENU bBar = nullptr;
 HMENU bMain = nullptr;
 HMENU bStore = nullptr;
+UINT bTimer = 0;
 
 D2D1_RECT_F b1Rect = { 0, 0, 250.0f, 50.0f };
 D2D1_RECT_F b2Rect = { 275.0f, 0, 525.0f, 50.0f };
@@ -80,6 +81,9 @@ float clW = 0;
 int level = 1;
 int score = 0;
 int fall_cooldown = 100;
+int max_hero_lifes = 0;
+int max_evil_lifes = 0;
+int seconds = 0;
 
 ///////////////////////////////////////////////
 
@@ -393,6 +397,9 @@ void InitGame()
     Evil = PersFactory(clW - 100.0f, clH - 100.0f, types::evil1);
     Evil->SetDir(dirs::right);
 
+    max_hero_lifes = Hero->lifes;
+    max_evil_lifes = Evil->lifes;
+
     ACTIONCLASS::CreateFSM(Evil->lifes, Hero->lifes, Evil->x - Hero->ex, &EvilFSM);
 }
 BOOL CheckRecord()
@@ -536,6 +543,9 @@ void NextLevel()
     float tey = clH;
     D2D1_RECT_F TxtR = { tx,ty,tex,tey };
 
+    max_hero_lifes = Hero->lifes;
+    max_evil_lifes = Evil->lifes;
+
     while (!ready)
     {
         Draw->BeginDraw();
@@ -550,6 +560,13 @@ void NextLevel()
             Sleep(1000);
             ready = true;
         }
+    }
+    if (sound)
+    {
+        PlaySound(NULL, NULL, NULL);
+        mciSendString(L"play .\\res\\snd\\fight.wav", NULL, NULL, NULL);
+        Sleep(1000);
+        PlaySound(snd_file, NULL, SND_ASYNC | SND_LOOP);
     }
 }
 void HallOfFame()
@@ -613,6 +630,132 @@ void HallOfFame()
         }
     }
     Sleep(3000);
+}
+void SaveGame()
+{
+    int result = 0;
+    CheckFile(save_file, &result);
+    if (result == FILE_EXIST)
+    {
+        if (sound)MessageBeep(MB_ICONEXCLAMATION);
+        if (MessageBox(bHwnd, L"Съществува записана игра, която ще загубиш !\n\nДа я презапиша ли ? !",
+            L"Презапис !", MB_YESNO | MB_ICONEXCLAMATION | MB_APPLMODAL) == IDNO) return;
+    }
+
+    std::wofstream save(save_file);
+
+    save << score << std::endl;
+    save << level << std::endl;
+    for (int i = 0; i < 16; i++)save << static_cast<int>(current_player[i]) << std::endl;
+    save << name_set << std::endl;
+
+    if (!Hero)save << 0 << std::endl;
+    else
+    {
+        save << Hero->x << std::endl;
+        save << Hero->y << std::endl;
+        save << Hero->lifes << std::endl;
+    }
+
+    if (!Evil)save << 0 << std::endl;
+    else
+    {
+        save << Evil->x << std::endl;
+        save << Evil->y << std::endl;
+        save << Evil->lifes << std::endl;
+    }
+
+    MessageBox(bHwnd, L"Играта е запазена !", L"Запис !", MB_OK | MB_APPLMODAL | MB_ICONINFORMATION);
+}
+void LoadGame()
+{
+    int result = 0;
+    CheckFile(save_file, &result);
+    if (result == FILE_NOT_EXIST)
+    {
+        if (sound)MessageBeep(MB_ICONEXCLAMATION);
+        MessageBox(bHwnd, L"Все още няма записана игра !\n\nПостарай се повече !",
+            L"Липсва файл !", MB_OK | MB_ICONEXCLAMATION | MB_APPLMODAL);
+        return;
+    }
+    else
+    {
+        if (sound)MessageBeep(MB_ICONEXCLAMATION);
+        if (MessageBox(bHwnd, L"Настоящата игра ще бъде загубена !\n\nДа я презапиша ли ? !",
+            L"Презапис !", MB_YESNO | MB_ICONEXCLAMATION | MB_APPLMODAL) == IDNO) return;
+    }
+
+    std::wifstream save(save_file);
+    float tx = 0;
+    float ty = 0;
+
+    save >> score;
+    save >> level;
+
+    fall_cooldown = 100;
+    vHits.clear();
+
+    LoadOff(&Cloud1);
+    LoadOff(&Cloud2);
+    LoadOff(&Hero);
+    LoadOff(&Evil);
+    LoadOff(&EvilFSM);
+
+    Cloud1 = OBJECT::CreateObject(-100.0f, 103.0f, 100.0f, 53.0f);
+    Cloud2 = OBJECT::CreateObject(clW, 102.0f, 80.0f, 42.0f);
+    Cloud1->SetDir(dirs::right);
+    Cloud2->SetDir(dirs::left);
+
+    for (int i = 0; i < 16; i++)
+    {
+        int letter = 0;
+        save >> letter;
+        current_player[i] = static_cast<wchar_t>(letter);
+    }
+    save >> name_set;
+
+    save >> tx;
+    if (tx == 0)GameOver();
+    else
+    {
+        save >> ty;
+        save >> result;
+        Hero = PersFactory(tx, ty, types::hero);
+        Hero->lifes = result;
+    }
+
+    save >> tx;
+    if (tx == 0)NextLevel();
+    else
+    {
+        save >> ty;
+        save >> result;
+        switch (level)
+        {
+        case 1:
+            Evil = PersFactory(tx, ty, types::evil1);
+            break;
+
+        case 2:
+            Evil = PersFactory(tx, ty, types::evil2);
+            break;
+
+        case 3:
+            Evil = PersFactory(tx, ty, types::evil3);
+            break;
+
+        case 4:
+            Evil = PersFactory(tx, ty, types::boss);
+            break;
+
+        }
+
+        Evil->lifes = result;
+    }
+    save.close();
+
+    ACTIONCLASS::CreateFSM(Evil->lifes, Hero->lifes, Evil->x - Hero->ex, &EvilFSM);
+    MessageBox(bHwnd, L"Играта е заредена !", L"Зареждане !", MB_OK | MB_APPLMODAL | MB_ICONINFORMATION);
 }
 
 INT_PTR CALLBACK bDlgProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lParam)
@@ -796,6 +939,17 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
         }
         break;
 
+    case WM_TIMER:
+        if (pause)break;
+        seconds++;
+        if (seconds > 10)
+        {
+            seconds = 0;
+            if (Hero->lifes + 10 <= max_hero_lifes)Hero->lifes += 10;
+            if (Evil->lifes + 10 <= max_evil_lifes)Evil->lifes += 10;
+        }
+        break;
+
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
@@ -817,13 +971,13 @@ LRESULT CALLBACK bWinProc(HWND hwnd, UINT ReceivedMsg, WPARAM wParam, LPARAM lPa
 
         case mSave:
             pause = true;
-            //SaveGame();
+            SaveGame();
             pause = false;
             break;
 
         case mLoad:
             pause = true;
-            //LoadGame();
+            LoadGame();
             pause = false;
             break;
 
@@ -1561,14 +1715,15 @@ void Init2D()
 
     bool ready1 = false;
     bool ready2 = false;
-
+    if (sound)mciSendString(L"play .\\res\\snd\\intro.wav", NULL, NULL, NULL);
+    
     while (!ready1 && !ready2)
     {
         Draw->BeginDraw();
         Draw->Clear(D2D1::ColorF(D2D1::ColorF::DarkBlue));
         if (x1 > clW / 2 - 150.0f)
         {
-            x1 -= 1.1f;
+            x1 -= 3.1f;
             ex1 = x1 + 600.0f;
             Line1R.left = x1;
             Line1R.right = ex1;
@@ -1579,7 +1734,7 @@ void Init2D()
 
         if (x2 < clW / 2 + 100.0f)
         {
-            x2 += 1.1f;
+            x2 += 3.1f;
             ex2 = x2 + 600.0f;
             Line2R.left = x2;
             Line2R.right = ex2;
@@ -1595,6 +1750,13 @@ void Init2D()
         Draw->EndDraw();
     }
     Sleep(1500);
+    if (sound)
+    {
+        PlaySound(NULL, NULL, NULL);
+        mciSendString(L"play .\\res\\snd\\fight.wav", NULL, NULL, NULL);
+        Sleep(1000);
+        PlaySound(snd_file, NULL, SND_ASYNC | SND_LOOP);
+    }
 }
 
 ///////////////////////////////////////////////
@@ -1604,7 +1766,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     bIns = hInstance;
     if (!bIns)ErrExit(eClass);
     Init2D();
-    
+    PlaySound(snd_file, NULL, SND_ASYNC | SND_LOOP);
+
+
     while (bMsg.message != WM_QUIT)
     {
         if ((bRet = PeekMessage(&bMsg, bHwnd, NULL, NULL, PM_REMOVE)) != 0)
@@ -1801,7 +1965,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                Hero->SetState(states::fall);
             }
         }
-
 
         ///////////////////////////////////////////
 
